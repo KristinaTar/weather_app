@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import '@testing-library/jest-dom';
 import App from "./App";
 import { renderWithProvider } from "./helpers/testHelpers";
@@ -46,19 +46,9 @@ describe('App tests', () => {
     userEvent.click(detailsButton);
 
     await waitFor(
-      () => expect(screen.getByTestId('detailsName').querySelector('div')!.textContent),
+      () => expect(screen.findByTestId("detailsName")),
       { timeout: 500 }
     );
-
-
-    // const detailsButton = screen.getByTestId('moreDetails-kyiv');
-    // userEvent.click(detailsButton);
-    // const detailsName = screen.getByTestId('detailsName');
-    // expect(detailsName).toHaveDisplayValue('kyiv');
-
-
-
-
 
   });
 });

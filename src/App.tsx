@@ -1,46 +1,102 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
-import { useAppDispatch } from "./store/hooks";
-import { updateWeatherForCities, addUpdateCity } from "./store/weatherSlicer";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { updateWeatherForCities, addUpdateCity, getError, ErrorType, getCities } from "./store/weatherSlicer";
 import CitiesList from "./components/CitiesList";
 import MoreDetails from "./components/MoreDetails";
-import { Box, Button, FormControl, OutlinedInput } from "@mui/material";
+import { Alert, Box, Button, Container, FormControl, Grid, OutlinedInput, TextField } from "@mui/material";
+import { Route, Routes } from 'react-router-dom';
 
 
 function App() {
-
-  const [selectedCityWeather, setSelectedCityWeather] = useState<Weather | null>(null);
-
-  const [showMoreDetails, setShowMoreDetails] = useState<boolean>(false)
   const [newCity, setNewCity] = useState<string>('')
+  const [customError, setCustomError] = useState<string>('')
+  const error = useAppSelector(getError);
+  const cities = useAppSelector(getCities);
 
   const dispatch = useAppDispatch();
-  dispatch(updateWeatherForCities());
+
+  useEffect(() => {
+    dispatch(updateWeatherForCities());
+  }, []);
+
+  const handleAddCity = () => {
+    dispatch(addUpdateCity(newCity));
+    if(cities.includes(newCity.toLowerCase())) {
+      setCustomError('City already added!');
+
+      return;
+    }
+    setNewCity('');
+    setCustomError('');
+  }
 
   return (
     <div>
-      <Box component="form" noValidate autoComplete="off">
-        <FormControl sx={{ width: '200px', margin: '20px' }}>
-          <OutlinedInput
-            placeholder="Please enter city"
-            data-testid="searchInput"
-            value={newCity}
-            onChange={(e) => setNewCity(e.target.value)}
-          />
-        </FormControl>
-        <Button
-          data-testid="searchButton"
-          onClick={() => {
-            dispatch(addUpdateCity(newCity));
-            setNewCity(' ');
-          }}
-        >
-          Add
-        </Button>
-      </Box>
-      <CitiesList setSelectedCityWeather={setSelectedCityWeather} setShowMoreDetails={setShowMoreDetails}/>
-      {selectedCityWeather && <MoreDetails selectedCityWeather={selectedCityWeather} showMoreDetails={showMoreDetails}/>}
-
+      <Grid container
+            sx={{
+              width: '100%',
+              justifyContent: 'center',
+            }}
+      >
+        <Grid item sx={{
+          padding: '30px 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: '20px',
+        }}>
+          <Grid container
+                sx={{ justifyContent: 'space-between' }}
+          >
+            <Grid item>
+              <OutlinedInput
+                placeholder="Please enter city"
+                data-testid="searchInput"
+                value={newCity}
+                onChange={(e) => setNewCity(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddCity();
+                  }
+                }
+                }
+              />
+            </Grid>
+            <Grid item>
+              <Button
+                sx={{ fontWeight: '600', height: '100%' }}
+                data-testid="searchButton"
+                variant="contained"
+                onClick={handleAddCity}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+          {error === ErrorType.CityNotFound && <Alert severity="error">No such city!</Alert>}
+          {customError.length > 0 && <Alert severity="warning">{customError}</Alert>}
+          <CitiesList/>
+        </Grid>
+        <Grid item>
+          {error === ErrorType.ServerProblem && (
+            <Container
+              sx={{display: 'flex', padding: '50px'}}
+            >
+              <Alert severity="error">Something went wrong!</Alert>
+            </Container>
+          )}
+          <Routes>
+            <Route index element={<></>}/>
+            <Route
+              path="/:selectedCity"
+              element={(
+                <MoreDetails/>
+              )}
+            />
+          </Routes>
+        </Grid>
+      </Grid>
     </div>
   );
 }

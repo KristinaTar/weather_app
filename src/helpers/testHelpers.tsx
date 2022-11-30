@@ -13,13 +13,13 @@
 //       </Router>
 //     </Provider>
 //   );
-
 import React, { PropsWithChildren } from 'react'
+import { HashRouter as Router } from 'react-router-dom';
 import { render } from '@testing-library/react'
 import { configureStore } from '@reduxjs/toolkit'
 import { Provider } from 'react-redux'
 // As a basic setup, import your same slice reducers
-import weatherReducer, {initialState as weatherInitialState} from '../store/weatherSlicer';
+import weatherReducer, { initialState as weatherInitialState } from '../store/weatherSlicer';
 
 const preloadedState = {
   weather: weatherInitialState,
@@ -35,7 +35,11 @@ export function renderWithProvider(
   } = {}
 ) {
   function Wrapper({ children }: PropsWithChildren<{}>) {
-    return <Provider store={store}>{children}</Provider>
+    return <Provider store={store}>
+      <Router>
+        {children}
+      </Router>
+    </Provider>
   }
 
   // Return an object with the store and all of RTL's query functions

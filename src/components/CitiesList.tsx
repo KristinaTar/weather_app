@@ -4,64 +4,62 @@ import { getCities, getWeather, deleteCity, addUpdateCity } from '../store/weath
 import Card from '@mui/material/Card';
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import {  Button, CardActions } from "@mui/material";
+import { Box, Button, CardActions } from "@mui/material";
+import { Link } from "react-router-dom";
 
 
-type Props = {
-  setSelectedCityWeather: (arg: Weather) => void;
-  setShowMoreDetails: (arg: boolean) => void;
-}
-
-
-const CitiesList: React.FC<Props> = ({setSelectedCityWeather,setShowMoreDetails }) => {
+const CitiesList: React.FC = () => {
   const cities = useAppSelector(getCities);
   const weather = useAppSelector(getWeather);
   const dispatch = useAppDispatch();
 
   return (
     <>
-      {cities.map((city:any) =>
+      {cities.map((city: any) =>
         <Card
-          key = {city}
-          sx={{
-            backgroundColor: '#d9e8f3',
-            maxWidth: '300px',
-            margin: '20px',
-          }}
+          key={city}
+          sx={{ backgroundColor: '#d9e8f3' }}
         >
-            <CardContent>
+          <CardContent>
+            <Box>
               <Button
+                style={{ float: 'right', fontWeight: '600' }}
                 data-testid={`deleteButton-${city}`}
-                onClick={()=> dispatch(deleteCity(city))}
+                onClick={() => dispatch(deleteCity(city))}
               >
                 X
               </Button>
-              <Typography gutterBottom variant="h5" component="h2">
+              <Typography style={{ display: 'inline-block' }} gutterBottom variant="h5" component="h2">
                 {!weather[city] ? "Loading..." : weather[city].name}
               </Typography>
-              <Typography variant="body2" color="textSecondary" component="p">
-                {!weather[city] ? "Loading..." : Math.floor(weather[city].main.temp - 273.15)+ " °C"}
+              <Typography style={{ display: 'inline-block', paddingLeft: '10px' }} variant="h6" color="textSecondary"
+                          component="p">
+                {!weather[city] ? "Loading..." : Math.floor(weather[city].main.temp - 273.15) + " °C"}
               </Typography>
+            </Box>
+            <Box
+              sx={{display: 'flex', gap: '10px'}}
+            >
               <Button
-                onClick={()=> dispatch(addUpdateCity(weather[city].name))}
+                variant={"outlined"}
+                size="small"
+                onClick={() => {
+                  dispatch(addUpdateCity(weather[city].name));
+                }}
               >
                 Update weather
               </Button>
-              <CardActions>
+              <Link to={city} style={{ textDecoration: 'none' }}>
                 <Button
+                  variant={"outlined"}
                   size="small"
-                  style={{margin: '0 auto'}}
                   data-testid={`moreDetails-${city}`}
-                  onClick={()=> {
-                    setSelectedCityWeather(weather[city]);
-                    setShowMoreDetails(true);
-                  }}
                 >
                   More Details
                 </Button>
-              </CardActions>
-
-            </CardContent>
+              </Link>
+            </Box>
+          </CardContent>
         </Card>
       )}
     </>

@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getLocalStorage, getWeatherAPI, updateLocalStorage } from '../api';
-import { AppDispatch, RootState } from "./store";
+import { RootState } from "./store";
 
-type CitiesWeather = {[key: string]: Weather};
+type CitiesWeather = { [key: string]: Weather };
 
 export interface WeatherState {
   cities: string[];
@@ -24,11 +24,17 @@ export const initialState: WeatherState = {
 
 export const updateWeatherForCities = createAsyncThunk<CitiesWeather, void, { state: RootState }>(
   'weather/getWeatherForCities',
-  async (_, { getState }) => {
+  async (_, { getState, rejectWithValue }) => {
     const cities = getState().weather.cities;
     const weatherData: CitiesWeather = {};
-    for (const city of cities) {
-      weatherData[city.toLowerCase()] = await getWeatherAPI(city);
+    for(const city of cities) {
+      const res = await getWeatherAPI(city);
+
+      if(res.status === 200) {
+        weatherData[city.toLowerCase()] = await res.json() as Weather;
+      } else {
+        return rejectWithValue('Error');
+      }
     }
     return weatherData;
   },
@@ -36,9 +42,16 @@ export const updateWeatherForCities = createAsyncThunk<CitiesWeather, void, { st
 
 export const addUpdateCity = createAsyncThunk(
   'weather/addUpdateCity',
-  async (cityName: string) => {
+  async (cityName: string, { rejectWithValue }) => {
     const city = cityName.toLowerCase();
-    return await getWeatherAPI(city);
+
+    const res = await getWeatherAPI(city);
+
+    if(res.status === 200) {
+      return await res.json() as Weather;
+    }
+
+    return rejectWithValue('Error');
   },
 );
 
@@ -48,7 +61,7 @@ export const weatherSlice = createSlice(
     initialState,
     reducers: {
       deleteCity: (state, action: PayloadAction<string>) => {
-        state.cities = state.cities.filter((city: any)=> city !== action.payload.toLowerCase());
+        state.cities = state.cities.filter((city: any) => city !== action.payload.toLowerCase());
         updateLocalStorage(state.cities);
       },
     },
@@ -62,24 +75,27 @@ export const weatherSlice = createSlice(
         });
 
       builder
+        .addCase(addUpdateCity.pending, (state, action) => {
+          const cityName = action.meta.arg.toLowerCase();
+          delete state.weather[cityName];
+        })
         .addCase(addUpdateCity.fulfilled, (state, action) => {
           const cityName = action.payload.name.toLowerCase();
-          if(!state.cities.includes(cityName)) {
+          if (!state.cities.includes(cityName)) {
             state.cities.push(cityName);
             updateLocalStorage(state.cities);
           }
           state.weather[cityName] = action.payload;
         })
-        .addCase(addUpdateCity.rejected, (state, error) => {
-          console.log({error});
+        .addCase(addUpdateCity.rejected, (state) => {
           state.error = ErrorType.CityNotFound;
         });
 
       builder
         .addMatcher((action) => action.type.endsWith("/fulfilled"),
           (state) => {
-          state.error = ErrorType.NoError;
-        });
+            state.error = ErrorType.NoError;
+          });
     },
   },
 );
@@ -87,6 +103,7 @@ export const weatherSlice = createSlice(
 export const getCities = (state: RootState) => state.weather.cities;
 
 export const getWeather = (state: RootState) => state.weather.weather;
+export const getError = (state: RootState) => state.weather.error;
 export const { deleteCity } = weatherSlice.actions;
 
 export default weatherSlice.reducer;
