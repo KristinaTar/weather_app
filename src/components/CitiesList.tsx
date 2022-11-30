@@ -1,11 +1,10 @@
 import React from 'react';
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { getCities, getWeather, deleteCity } from '../store/weatherSlicer';
+import { getCities, getWeather, deleteCity, addUpdateCity } from '../store/weatherSlicer';
 import Card from '@mui/material/Card';
-import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { Box, Button, CardActions } from "@mui/material";
+import {  Button, CardActions } from "@mui/material";
 
 
 type Props = {
@@ -19,41 +18,40 @@ const CitiesList: React.FC<Props> = ({setSelectedCityWeather,setShowMoreDetails 
   const weather = useAppSelector(getWeather);
   const dispatch = useAppDispatch();
 
-
   return (
     <>
-      {cities.map(city =>
+      {cities.map((city:any) =>
         <Card
           key = {city}
           sx={{
-            backgroundColor: '#eeeeee',
+            backgroundColor: '#d9e8f3',
             maxWidth: '300px',
             margin: '20px',
           }}
         >
-          <CardActionArea>
             <CardContent>
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-
-              }}>
               <Button
-                onClick={()=> dispatch(deleteCity(weather[city].name))}
+                data-testid={`deleteButton-${city}`}
+                onClick={()=> dispatch(deleteCity(city))}
               >
                 X
               </Button>
-              </Box>
               <Typography gutterBottom variant="h5" component="h2">
                 {!weather[city] ? "Loading..." : weather[city].name}
               </Typography>
               <Typography variant="body2" color="textSecondary" component="p">
                 {!weather[city] ? "Loading..." : Math.floor(weather[city].main.temp - 273.15)+ " °C"}
               </Typography>
+              <Button
+                onClick={()=> dispatch(addUpdateCity(weather[city].name))}
+              >
+                Update weather
+              </Button>
               <CardActions>
                 <Button
                   size="small"
                   style={{margin: '0 auto'}}
+                  data-testid={`moreDetails-${city}`}
                   onClick={()=> {
                     setSelectedCityWeather(weather[city]);
                     setShowMoreDetails(true);
@@ -64,7 +62,6 @@ const CitiesList: React.FC<Props> = ({setSelectedCityWeather,setShowMoreDetails 
               </CardActions>
 
             </CardContent>
-          </CardActionArea>
         </Card>
       )}
     </>
