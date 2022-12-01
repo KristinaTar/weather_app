@@ -9,15 +9,7 @@ import {
 } from "./store/weatherSlicer";
 import CitiesList from "./components/CitiesList";
 import MoreDetails from "./components/MoreDetails";
-import {
-  Alert,
-  Button,
-  Container,
-  FormControl,
-  Grid,
-  OutlinedInput,
-  TextField,
-} from "@mui/material";
+import { Alert, Button, Grid, OutlinedInput } from "@mui/material";
 import { Route, Routes } from "react-router-dom";
 
 function App() {

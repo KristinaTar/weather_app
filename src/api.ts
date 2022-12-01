@@ -2,7 +2,7 @@ export {};
 const APiKey = "0e43ba82fc9cae2aea7457683524468f";
 
 export const getWeatherAPI = (city: string): Promise<Response> => {
-  return fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${APiKey}`);
+  return fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${APiKey}`);
 };
 
 export const updateLocalStorage = (cities: string[]) => {
