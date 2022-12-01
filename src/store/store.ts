@@ -1,5 +1,5 @@
-import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import weatherReducer from './weatherSlicer';
+import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
+import weatherReducer from "./weatherSlicer";
 
 export const store = configureStore({
   reducer: {
@@ -16,5 +16,5 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   RootState,
   unknown,
   Action<string>
-  >;
+>;
 /* eslint-enable @typescript-eslint/indent */
